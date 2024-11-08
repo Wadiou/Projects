@@ -1,0 +1,1 @@
+g++ Main.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp -o output/LOVC ; ./output/LOVC
