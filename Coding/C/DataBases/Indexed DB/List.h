@@ -1,5 +1,5 @@
-#ifndef FILE_H
-#define FILE_H
+#ifndef LIST_H
+#define LIST_H
 
 #include "Types.h"
 #include <stdlib.h>

@@ -9,8 +9,11 @@ To Run IndexedDB:
 
 To Compile and Run IndexedDB:
 
+    Install the ASCII Art Library:
+    sudo apt install libncurses5-dev libncursesw5-dev
+
     Navigate to the Indexed DB folder in the terminal:
     cd "Indexed DB"
     Compile and run using the following command:
-    g++ Main.cpp Indexing.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp -o output/IndexedDB ; ./output/IndexedDB
+    g++ Main.cpp Indexing.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp TerminalTitle.cpp -lncurses -o output/IndexedDB ; ./output/IndexedDB
     

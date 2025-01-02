@@ -1,8 +1,14 @@
 #include "File_Functions.h"
 #include "Generator.h"
 #include "List.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "TerminalTitle.h"
 
 int main() {
+    show_project_title() ;
+
     char filename[] = "output/lovc_records.dat";
     char IndexFile[] = "output/lovc_index.dat";
     int choice, num_records, value, start, end;

@@ -1,8 +1,10 @@
 #include "File_Functions.h"
 #include "Generator.h"
 #include "List.h"
+#include "TerminalTitle.h"
 
 int main() {
+    show_project_title();
     char filename[] = "output/lovc_records.dat";
     int choice, num_records, value, start, end;
     Student student;

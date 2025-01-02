@@ -140,23 +140,85 @@ void Search_in_block(char Filename[], int block_number, int key, bool& found, bo
     fclose(file);
 
 }
+void handle_overflow(char Filename[], char IndexFile[], Tblock& temp_block, Tindex& index, char patient_info[], int& Block_number) {
+    char first_element[MAX_String_LENGTH * 6], last_element[MAX_String_LENGTH * 6], temp_last_element[MAX_String_LENGTH * 6];
+    int last_element_index;
+    bool found , Deleted ;
+
+    extract_first_last(temp_block, first_element, last_element);
+    strcpy(temp_last_element, last_element);
+    Search_in_block(Filename, index.Block_number, extract_key_from_field(last_element), found, Deleted, last_element_index);
+
+    int last_index = last_element_index + strlen(patient_info);
+    shift_elements(temp_block, index.Block_index, strlen(patient_info), last_index);
+    fill_element(temp_block, patient_info, index.Block_index);
+
+    extract_first_last(temp_block, first_element, last_element);
+    int last_key = extract_key_from_field(last_element);
+    add_index_to_table(IndexFile, last_key, index.Block_number, false);
+
+    temp_block.next = Block_number;
+    Write_dir(Filename, index.Block_number, temp_block);
+
+    index.Block_number = Block_number;
+    fill_element(temp_block, temp_last_element, 0);
+    temp_block.arr[strlen(temp_last_element)] = '\0';
+    temp_block.Last_index = strlen(temp_last_element);
+    temp_block.next = -1;
+    add_index_to_table(IndexFile, extract_key_from_field(temp_last_element), Block_number, true);
+    Write_dir(Filename, index.Block_number, temp_block);
+    Set_Header(Filename, 1, ++Block_number);
+}
+void insert_into_block(char Filename[], char IndexFile[], Tblock& temp_block, Tindex& index, char patient_info[], int current_key) {
+    char first_element[MAX_String_LENGTH * 6], last_element[MAX_String_LENGTH * 6], temp_last_element[MAX_String_LENGTH * 6];
+    int last_element_index;
+    bool found , Deleted ;
+
+    extract_first_last(temp_block, first_element, last_element);
+    strcpy(temp_last_element, last_element);
+    Search_in_block(Filename, index.Block_number, extract_key_from_field(last_element), found, Deleted, last_element_index);
+
+    int last_index = last_element_index + strlen(patient_info);
+    shift_elements(temp_block, index.Block_index, strlen(patient_info), last_index);
+    fill_element(temp_block, patient_info, index.Block_index);
+
+    extract_first_last(temp_block, first_element, last_element);
+    int last_key = extract_key_from_field(last_element);
+    add_index_to_table(IndexFile, last_key, index.Block_number, false);
+    strcpy(patient_info, temp_last_element);
+
+    Write_dir(Filename, index.Block_number, temp_block);
+}
+void finalize_insertion(char Filename[], char IndexFile[], Tblock& temp_block, Tindex& index, char patient_info[], int current_key) {
+    char first_element[MAX_String_LENGTH * 6], last_element[MAX_String_LENGTH * 6];
+    bool found , Deleted ;
+
+    Search_in_block(Filename, index.Block_number, current_key, found, Deleted, index.Block_index);
+    if (!found) {
+        shift_elements(temp_block, index.Block_index, strlen(patient_info), temp_block.Last_index + strlen(patient_info));
+        fill_element(temp_block, patient_info, index.Block_index);
+
+        extract_first_last(temp_block, first_element, last_element);
+        int last_key = extract_key_from_field(last_element);
+        add_index_to_table(IndexFile, last_key, index.Block_number, false);
+        Write_dir(Filename, index.Block_number, temp_block);
+    }
+}
+
 void insert_record(char Filename[], char IndexFile[], Patient patient) {
-    FILE *file = fopen(Filename, "rb+");
-    FILE *Indexfile = fopen(IndexFile, "rb+");
+    FILE* file = fopen(Filename, "rb+");
+    FILE* Indexfile = fopen(IndexFile, "rb+");
     int current_key = convertKeyToInt(patient.Key);
     Tindex index;
     bool found, Deleted;
 
-
     Search_Index(IndexFile, current_key, found, index.Block_number);
 
     if (found) {
-        printf("Key %d already exists in index. Skipping insertion.\n", current_key);
         fclose(file);
         fclose(Indexfile);
         return;
     }
-
 
     Tblock temp_block;
     fseek(file, sizeof(Theader) + sizeof(Tblock) * index.Block_number, SEEK_SET);
@@ -165,7 +227,6 @@ void insert_record(char Filename[], char IndexFile[], Patient patient) {
     char patient_info[MAX_String_LENGTH * 6];
     Convertion(patient, patient_info);
 
-
     int Block_number = Get_Header(Filename, 1);
     char first_element[MAX_String_LENGTH * 6], last_element[MAX_String_LENGTH * 6];
 
@@ -173,84 +234,29 @@ void insert_record(char Filename[], char IndexFile[], Patient patient) {
         if (temp_block.next == -1) {
             Search_in_block(Filename, index.Block_number, current_key, found, Deleted, index.Block_index);
             if (!found) {
-                int last_element_index;
-                char temp_last_element[MAX_String_LENGTH * 6];
-                extract_first_last(temp_block, first_element, last_element);
-                strcpy(temp_last_element, last_element);
-                Search_in_block(Filename, index.Block_number, extract_key_from_field(last_element), found, Deleted, last_element_index);
-                int last_index = last_element_index + strlen(patient_info);
-                shift_elements(temp_block, index.Block_index, strlen(patient_info), last_index);
-                fill_element(temp_block, patient_info, index.Block_index);
-                extract_first_last(temp_block, first_element, last_element);
-                
-                int last_key = extract_key_from_field(last_element);
-                add_index_to_table(IndexFile, last_key, index.Block_number , false);
-                
-                temp_block.next = Block_number;
-                
-                Write_dir(Filename, index.Block_number, temp_block);
-                index.Block_number = Block_number ;
-                printf("Debug: New block %d created for overflow. Linked to block %d.\n", Block_number, index.Block_number);
-                fill_element(temp_block, temp_last_element, 0);
-                temp_block.arr[strlen(temp_last_element)] = '\0' ;
-                temp_block.Last_index = strlen(temp_last_element) ;
-                temp_block.next = -1 ;
-                add_index_to_table(IndexFile,extract_key_from_field(temp_last_element),Block_number,true) ;
-                Write_dir(Filename, index.Block_number, temp_block);
-                Set_Header(Filename, 1, ++Block_number);
+                handle_overflow(Filename, IndexFile, temp_block, index, patient_info, Block_number);
             }
             return;
         } else {
-            int temp_index = 0;
             Search_in_block(Filename, index.Block_number, current_key, found, Deleted, index.Block_index);
-
-            if (!found) 
-            {
-                extract_first_last(temp_block, first_element, last_element);
-                int last_element_index;
-                char temp_last_element[MAX_String_LENGTH * 6];
-                strcpy(temp_last_element, last_element);
-                Search_in_block(Filename, index.Block_number, extract_key_from_field(last_element), found, Deleted, last_element_index);
-                int last_index = last_element_index + strlen(patient_info);
-                shift_elements(temp_block, index.Block_index, strlen(patient_info), last_index);
-                fill_element(temp_block, patient_info, index.Block_index);
-                extract_first_last(temp_block, first_element, last_element);
-                
-                int last_key = extract_key_from_field(last_element);
-                add_index_to_table(IndexFile, last_key, index.Block_number , false);
-                strcpy(patient_info, temp_last_element);                 
-                Write_dir(Filename, index.Block_number, temp_block);
-                }
-            else
-            {
+            if (!found) {
+                insert_into_block(Filename, IndexFile, temp_block, index, patient_info, current_key);
+            } else {
                 return;
             }
-            
-            index.Block_number = temp_block.next ;
-            Read_dir(Filename,index.Block_number,temp_block) ;
+            index.Block_number = temp_block.next;
+            Read_dir(Filename, index.Block_number, temp_block);
         }
     }
 
     if (strlen(patient_info) <= MAX_Block_FILL - 1 - temp_block.Last_index) {
-
-
-        Search_in_block(Filename, index.Block_number, current_key, found, Deleted, index.Block_index);
-        if (!found) {
-            shift_elements(temp_block, index.Block_index, strlen(patient_info), temp_block.Last_index + strlen(patient_info) );
-            fill_element(temp_block, patient_info, index.Block_index);
-
-            extract_first_last(temp_block, first_element, last_element);
-            int last_key = extract_key_from_field(last_element);
-            add_index_to_table(IndexFile, last_key, index.Block_number ,false);
-            Write_dir(Filename, index.Block_number, temp_block);
-
-        } else {
-        }
+        finalize_insertion(Filename, IndexFile, temp_block, index, patient_info, current_key);
     }
 
     fclose(file);
     fclose(Indexfile);
 }
+
 
 
 void Delete_record(char Filename[], char IndexFile[], int key) {
@@ -328,9 +334,6 @@ void Search_by_range(char Filename[], char IndexFile[], int start, int end, Reco
             i = saved_index;
             if (!Deleted) {
                 Append(Header, temp_patient, index);
-                printf("Appended patient with key %d to the list.\n", key_value);
-            } else {
-                printf("Record with key %d is marked as deleted. Not appending.\n", key_value);
             }
         }
     }
