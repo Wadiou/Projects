@@ -1,0 +1,15 @@
+To Run SequentialDB:
+
+    Navigate to the output folder in the terminal:
+    cd output
+    Run the executable (Mac/Linux):
+    ./SequentialDB
+    Or directly click on it on Windows
+
+
+To Compile and Run SequentialDB:
+    
+    Navigate to the Sequential DB folder in the terminal:
+    cd "Sequential DB"
+    Compile and run using the following command:
+    g++ Main.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp -o output/SequentialDB ; ./output/SequentialDB
