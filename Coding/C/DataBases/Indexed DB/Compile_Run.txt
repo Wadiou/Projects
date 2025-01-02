@@ -6,12 +6,16 @@ To Run IndexedDB:
     Run the executable (Mac/Linux):
     ./IndexedDB
 
+    To run IndexedDB on Windows:
+    Navigate to the output folder in File Explorer.
+    Double-click on the WindowsIndexedDB.exe file to run the program.
+
 To Compile and Run IndexedDB:
 
     Install the ASCII Art Library:
     sudo apt install libncurses5-dev libncursesw5-dev
 
-    Navigate to the Indexed DB folder in the terminal:
+    Navigate to the Indexed DB folder in the terminal (Mac/Linux):
     cd "Indexed DB"
     Compile and run using the following command:
     g++ Main.cpp Indexing.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp TerminalTitle.cpp -lncurses -o output/IndexedDB ; ./output/IndexedDB
