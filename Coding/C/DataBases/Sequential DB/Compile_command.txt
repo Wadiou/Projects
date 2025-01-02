@@ -4,7 +4,6 @@ To Run SequentialDB:
     cd output
     Run the executable (Mac/Linux):
     ./SequentialDB
-    Or directly click on it on Windows
 
 
 To Compile and Run SequentialDB:
@@ -16,4 +15,3 @@ To Compile and Run SequentialDB:
     cd "Indexed DB"
     Compile and run using the following command:
     g++ Main.cpp Generator.cpp File_Functions.cpp Secondary_Functions.cpp List.cpp TerminalTitle.cpp -lncurses -o output/SequentialDB ; ./output/SequentialDB
-    
